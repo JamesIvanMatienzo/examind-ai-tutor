@@ -42,6 +42,9 @@ const App = () => (
             <Route path="/subjects/add" element={<AddSubjectScreen />} />
             <Route path="/subjects/:id" element={<SubjectFolderScreen />} />
             <Route path="/subjects/:id/chat" element={<AIChatScreen />} />
+            <Route path="/practice/setup" element={<PracticeSetupPage />} />
+            <Route path="/practice/quiz" element={<ActiveQuizPage />} />
+            <Route path="/practice/results" element={<QuizResultsPage />} />
             <Route path="/practice" element={<PracticePage />} />
             <Route path="/schedule" element={<SchedulePage />} />
             <Route path="/profile" element={<ProfilePage />} />
