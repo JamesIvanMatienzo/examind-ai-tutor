@@ -1,7 +1,10 @@
+import { useNavigate } from "react-router-dom";
 import BottomNav from "@/components/BottomNav";
-import { User, BookOpen, FileText, Zap, Clock } from "lucide-react";
+import { User, BookOpen, FileText, Zap, Clock, ChevronRight, TrendingUp } from "lucide-react";
 
 export default function ProfilePage() {
+  const navigate = useNavigate();
+
   return (
     <div className="min-h-screen bg-surface pb-20">
       <div className="bg-card px-6 pt-12 pb-6 flex flex-col items-center border-b">
@@ -31,6 +34,15 @@ export default function ProfilePage() {
         </div>
 
         <div className="space-y-1">
+          <button
+            onClick={() => navigate("/scores")}
+            className="w-full text-left px-4 py-3.5 text-sm font-medium rounded-xl hover:bg-muted transition-colors flex items-center justify-between"
+          >
+            <span className="flex items-center gap-2">
+              <TrendingUp className="h-4 w-4 text-primary" /> Score Tracker
+            </span>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          </button>
           {["Edit Profile", "App Settings", "Help & Feedback", "Sign Out"].map((item) => (
             <button key={item} className="w-full text-left px-4 py-3.5 text-sm font-medium rounded-xl hover:bg-muted transition-colors">
               {item}
