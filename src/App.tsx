@@ -15,6 +15,9 @@ import AddSubjectScreen from "./pages/AddSubjectScreen";
 import SubjectFolderScreen from "./pages/SubjectFolderScreen";
 import AIChatScreen from "./pages/AIChatScreen";
 import PracticePage from "./pages/PracticePage";
+import PracticeSetupPage from "./pages/PracticeSetupPage";
+import ActiveQuizPage from "./pages/ActiveQuizPage";
+import QuizResultsPage from "./pages/QuizResultsPage";
 import SchedulePage from "./pages/SchedulePage";
 import ProfilePage from "./pages/ProfilePage";
 import NotFound from "./pages/NotFound";
@@ -39,6 +42,9 @@ const App = () => (
             <Route path="/subjects/add" element={<AddSubjectScreen />} />
             <Route path="/subjects/:id" element={<SubjectFolderScreen />} />
             <Route path="/subjects/:id/chat" element={<AIChatScreen />} />
+            <Route path="/practice/setup" element={<PracticeSetupPage />} />
+            <Route path="/practice/quiz" element={<ActiveQuizPage />} />
+            <Route path="/practice/results" element={<QuizResultsPage />} />
             <Route path="/practice" element={<PracticePage />} />
             <Route path="/schedule" element={<SchedulePage />} />
             <Route path="/profile" element={<ProfilePage />} />
