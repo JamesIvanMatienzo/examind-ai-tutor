@@ -22,6 +22,8 @@ import SchedulePage from "./pages/SchedulePage";
 import AddExamDatePage from "./pages/AddExamDatePage";
 import AIStudyPlanPage from "./pages/AIStudyPlanPage";
 import ProfilePage from "./pages/ProfilePage";
+import EditProfilePage from "./pages/EditProfilePage";
+import AppSettingsPage from "./pages/AppSettingsPage";
 import ScoreTrackerPage from "./pages/ScoreTrackerPage";
 import NotFound from "./pages/NotFound";
 

@@ -43,9 +43,18 @@ export default function ProfilePage() {
             </span>
             <ChevronRight className="h-4 w-4 text-muted-foreground" />
           </button>
-          {["Edit Profile", "App Settings", "Help & Feedback", "Sign Out"].map((item) => (
-            <button key={item} className="w-full text-left px-4 py-3.5 text-sm font-medium rounded-xl hover:bg-muted transition-colors">
-              {item}
+          {[
+            { label: "Edit Profile", path: "/profile/edit" },
+            { label: "App Settings", path: "/settings" },
+            { label: "Help & Feedback", path: "" },
+            { label: "Sign Out", path: "/welcome" },
+          ].map((item) => (
+            <button
+              key={item.label}
+              onClick={() => item.path && navigate(item.path)}
+              className="w-full text-left px-4 py-3.5 text-sm font-medium rounded-xl hover:bg-muted transition-colors"
+            >
+              {item.label}
             </button>
           ))}
         </div>
