@@ -27,22 +27,24 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<SplashScreen />} />
-          <Route path="/welcome" element={<WelcomeScreen />} />
-          <Route path="/signup" element={<SignUpScreen />} />
-          <Route path="/login" element={<LoginScreen />} />
-          <Route path="/onboarding" element={<OnboardingScreen />} />
-          <Route path="/home" element={<HomeDashboard />} />
-          <Route path="/subjects" element={<SubjectsPage />} />
-          <Route path="/subjects/add" element={<AddSubjectScreen />} />
-          <Route path="/subjects/:id" element={<SubjectFolderScreen />} />
-          <Route path="/subjects/:id/chat" element={<AIChatScreen />} />
-          <Route path="/practice" element={<PracticePage />} />
-          <Route path="/schedule" element={<SchedulePage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <div className="mx-auto w-full max-w-[430px] min-h-screen relative bg-background shadow-2xl">
+          <Routes>
+            <Route path="/" element={<SplashScreen />} />
+            <Route path="/welcome" element={<WelcomeScreen />} />
+            <Route path="/signup" element={<SignUpScreen />} />
+            <Route path="/login" element={<LoginScreen />} />
+            <Route path="/onboarding" element={<OnboardingScreen />} />
+            <Route path="/home" element={<HomeDashboard />} />
+            <Route path="/subjects" element={<SubjectsPage />} />
+            <Route path="/subjects/add" element={<AddSubjectScreen />} />
+            <Route path="/subjects/:id" element={<SubjectFolderScreen />} />
+            <Route path="/subjects/:id/chat" element={<AIChatScreen />} />
+            <Route path="/practice" element={<PracticePage />} />
+            <Route path="/schedule" element={<SchedulePage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </div>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
