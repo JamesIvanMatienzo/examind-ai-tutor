@@ -22,6 +22,8 @@ import SchedulePage from "./pages/SchedulePage";
 import AddExamDatePage from "./pages/AddExamDatePage";
 import AIStudyPlanPage from "./pages/AIStudyPlanPage";
 import ProfilePage from "./pages/ProfilePage";
+import EditProfilePage from "./pages/EditProfilePage";
+import AppSettingsPage from "./pages/AppSettingsPage";
 import ScoreTrackerPage from "./pages/ScoreTrackerPage";
 import NotFound from "./pages/NotFound";
 
@@ -53,6 +55,8 @@ const App = () => (
             <Route path="/schedule/add-exam" element={<AddExamDatePage />} />
             <Route path="/schedule/ai-plan" element={<AIStudyPlanPage />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/profile/edit" element={<EditProfilePage />} />
+            <Route path="/settings" element={<AppSettingsPage />} />
             <Route path="/scores" element={<ScoreTrackerPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
