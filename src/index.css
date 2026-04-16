@@ -95,6 +95,18 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    @apply bg-muted text-foreground font-sans antialiased;
   }
+}
+
+/* Ensure fixed elements stay within mobile container */
+.max-w-\[430px\] {
+  isolation: isolate;
+}
+
+.max-w-\[430px\] nav.fixed,
+.max-w-\[430px\] .fixed {
+  max-width: 430px;
+  left: 50%;
+  transform: translateX(-50%);
 }
