@@ -19,6 +19,8 @@ import PracticeSetupPage from "./pages/PracticeSetupPage";
 import ActiveQuizPage from "./pages/ActiveQuizPage";
 import QuizResultsPage from "./pages/QuizResultsPage";
 import SchedulePage from "./pages/SchedulePage";
+import AddExamDatePage from "./pages/AddExamDatePage";
+import AIStudyPlanPage from "./pages/AIStudyPlanPage";
 import ProfilePage from "./pages/ProfilePage";
 import NotFound from "./pages/NotFound";
 
@@ -47,6 +49,8 @@ const App = () => (
             <Route path="/practice/results" element={<QuizResultsPage />} />
             <Route path="/practice" element={<PracticePage />} />
             <Route path="/schedule" element={<SchedulePage />} />
+            <Route path="/schedule/add-exam" element={<AddExamDatePage />} />
+            <Route path="/schedule/ai-plan" element={<AIStudyPlanPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
