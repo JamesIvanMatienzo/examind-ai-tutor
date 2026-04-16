@@ -55,6 +55,8 @@ const App = () => (
             <Route path="/schedule/add-exam" element={<AddExamDatePage />} />
             <Route path="/schedule/ai-plan" element={<AIStudyPlanPage />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/profile/edit" element={<EditProfilePage />} />
+            <Route path="/settings" element={<AppSettingsPage />} />
             <Route path="/scores" element={<ScoreTrackerPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
