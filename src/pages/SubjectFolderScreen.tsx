@@ -128,14 +128,15 @@ export default function SubjectFolderScreen() {
           <div className="space-y-4 mt-2">
             <h2 className="text-lg font-bold">Choose your study mode</h2>
             {[
-              { icon: BarChart3, title: "Strategy & Schedule", desc: "Build a smart study plan for your exam", color: "#1D9E75" },
-              { icon: MessageSquare, title: "Guided Learning", desc: "Learn topic by topic with your AI tutor", color: "#534AB7" },
-              { icon: Zap, title: "Practice Exam", desc: "Take a full AI-generated exam", color: "#D85A30" },
+              { icon: BarChart3, title: "Strategy & Schedule", desc: "Build a smart study plan for your exam", color: "#1D9E75", key: "strategy" },
+              { icon: MessageSquare, title: "Guided Learning", desc: "Learn topic by topic with your AI tutor", color: "#534AB7", key: "guided" },
+              { icon: Zap, title: "Practice Exam", desc: "Take a full AI-generated exam", color: "#D85A30", key: "practice" },
             ].map((mode, i) => (
               <motion.button
                 key={i}
                 whileTap={{ scale: 0.98 }}
                 className="w-full bg-card border rounded-xl p-5 flex items-center gap-4 text-left hover:border-primary transition-colors"
+                onClick={() => navigate(`/subjects/${id}/chat?mode=${mode.key}`)}
               >
                 <div className="w-12 h-12 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: mode.color + "15" }}>
                   <mode.icon className="h-6 w-6" style={{ color: mode.color }} />

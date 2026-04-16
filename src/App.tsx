@@ -13,6 +13,7 @@ import HomeDashboard from "./pages/HomeDashboard";
 import SubjectsPage from "./pages/SubjectsPage";
 import AddSubjectScreen from "./pages/AddSubjectScreen";
 import SubjectFolderScreen from "./pages/SubjectFolderScreen";
+import AIChatScreen from "./pages/AIChatScreen";
 import PracticePage from "./pages/PracticePage";
 import SchedulePage from "./pages/SchedulePage";
 import ProfilePage from "./pages/ProfilePage";
@@ -36,6 +37,7 @@ const App = () => (
           <Route path="/subjects" element={<SubjectsPage />} />
           <Route path="/subjects/add" element={<AddSubjectScreen />} />
           <Route path="/subjects/:id" element={<SubjectFolderScreen />} />
+          <Route path="/subjects/:id/chat" element={<AIChatScreen />} />
           <Route path="/practice" element={<PracticePage />} />
           <Route path="/schedule" element={<SchedulePage />} />
           <Route path="/profile" element={<ProfilePage />} />
