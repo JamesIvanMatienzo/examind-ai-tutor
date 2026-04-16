@@ -14,8 +14,8 @@ export default function BottomNav() {
   const navigate = useNavigate();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-card border-t z-50">
-      <div className="flex items-center justify-around h-16 max-w-lg mx-auto">
+    <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] bg-card border-t z-50">
+      <div className="flex items-center justify-around h-16">
         {tabs.map((tab) => {
           const active = location.pathname.startsWith(tab.path);
           return (
