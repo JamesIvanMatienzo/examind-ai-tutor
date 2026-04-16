@@ -136,6 +136,7 @@ export default function SubjectFolderScreen() {
                 key={i}
                 whileTap={{ scale: 0.98 }}
                 className="w-full bg-card border rounded-xl p-5 flex items-center gap-4 text-left hover:border-primary transition-colors"
+                onClick={() => navigate(`/subjects/${id}/chat?mode=${mode.key}`)}
               >
                 <div className="w-12 h-12 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: mode.color + "15" }}>
                   <mode.icon className="h-6 w-6" style={{ color: mode.color }} />
