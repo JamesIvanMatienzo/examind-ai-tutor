@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
-import { ArrowLeft, HelpCircle, Mail, MessageSquare, Send, Info, Github, Twitter, Globe } from "lucide-react";
+import { ArrowLeft, HelpCircle, Mail, MessageSquare, Send, Info, Globe, Star } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
