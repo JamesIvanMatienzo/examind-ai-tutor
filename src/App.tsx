@@ -25,6 +25,7 @@ import ProfilePage from "./pages/ProfilePage";
 import EditProfilePage from "./pages/EditProfilePage";
 import AppSettingsPage from "./pages/AppSettingsPage";
 import ScoreTrackerPage from "./pages/ScoreTrackerPage";
+import HelpFeedbackPage from "./pages/HelpFeedbackPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
