@@ -25,6 +25,7 @@ import ProfilePage from "./pages/ProfilePage";
 import EditProfilePage from "./pages/EditProfilePage";
 import AppSettingsPage from "./pages/AppSettingsPage";
 import ScoreTrackerPage from "./pages/ScoreTrackerPage";
+import HelpFeedbackPage from "./pages/HelpFeedbackPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -58,6 +59,7 @@ const App = () => (
             <Route path="/profile/edit" element={<EditProfilePage />} />
             <Route path="/settings" element={<AppSettingsPage />} />
             <Route path="/scores" element={<ScoreTrackerPage />} />
+            <Route path="/help" element={<HelpFeedbackPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </div>

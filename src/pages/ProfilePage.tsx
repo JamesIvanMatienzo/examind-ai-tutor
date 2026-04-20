@@ -46,7 +46,7 @@ export default function ProfilePage() {
           {[
             { label: "Edit Profile", path: "/profile/edit" },
             { label: "App Settings", path: "/settings" },
-            { label: "Help & Feedback", path: "" },
+            { label: "Help & Feedback", path: "/help" },
             { label: "Sign Out", path: "/welcome" },
           ].map((item) => (
             <button
