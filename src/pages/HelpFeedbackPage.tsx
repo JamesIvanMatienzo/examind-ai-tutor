@@ -241,13 +241,8 @@ export default function HelpFeedbackPage() {
               <span className="font-medium">Web</span>
             </div>
           </div>
-          <div className="flex gap-3 mt-4 pt-3 border-t">
-            <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-              <Github className="h-4 w-4" />
-            </a>
-            <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-              <Twitter className="h-4 w-4" />
-            </a>
+          <div className="flex gap-3 mt-4 pt-3 border-t items-center">
+            <Star className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors cursor-pointer" />
             <span className="ml-auto text-[10px] text-muted-foreground">© 2026 StudyApp</span>
           </div>
         </section>
