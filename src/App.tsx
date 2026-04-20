@@ -59,6 +59,7 @@ const App = () => (
             <Route path="/profile/edit" element={<EditProfilePage />} />
             <Route path="/settings" element={<AppSettingsPage />} />
             <Route path="/scores" element={<ScoreTrackerPage />} />
+            <Route path="/help" element={<HelpFeedbackPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </div>
