@@ -1,14 +1,76 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
+import { toast } from "sonner";
 
 export default function SignUpScreen() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [school, setSchool] = useState("");
+  const [yearLevel, setYearLevel] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!fullName || !email || !password) {
+      toast.error("Please fill out the required fields");
+      return;
+    }
+    if (password.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+    if (password !== confirm) {
+      toast.error("Passwords don't match");
+      return;
+    }
+    setLoading(true);
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/home`,
+        data: { full_name: fullName, school_name: school, year_level: yearLevel },
+      },
+    });
+    setLoading(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    if (data.session) {
+      toast.success("Account created!");
+      navigate("/onboarding");
+    } else {
+      toast.success("Check your email to confirm your account");
+      navigate("/login");
+    }
+  };
+
+  const handleGoogle = async () => {
+    setGoogleLoading(true);
+    const result = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: window.location.origin + "/home",
+    });
+    if (result.error) {
+      setGoogleLoading(false);
+      toast.error("Google sign-in failed");
+      return;
+    }
+    if (result.redirected) return;
+    navigate("/home");
+  };
 
   return (
     <div className="min-h-screen bg-background px-6 py-6">
@@ -19,25 +81,25 @@ export default function SignUpScreen() {
       <h1 className="text-2xl font-bold mb-1">Create Account</h1>
       <p className="text-muted-foreground text-sm mb-8">Start your smarter study journey</p>
 
-      <div className="space-y-4">
+      <form onSubmit={handleSignup} className="space-y-4">
         <div className="space-y-2">
           <Label>Full Name</Label>
-          <Input placeholder="Juan Dela Cruz" className="h-12 rounded-xl" />
+          <Input placeholder="Juan Dela Cruz" className="h-12 rounded-xl" value={fullName} onChange={(e) => setFullName(e.target.value)} />
         </div>
 
         <div className="space-y-2">
           <Label>Email Address</Label>
-          <Input type="email" placeholder="you@email.com" className="h-12 rounded-xl" />
+          <Input type="email" placeholder="you@email.com" className="h-12 rounded-xl" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
         </div>
 
         <div className="space-y-2">
           <Label>School Name</Label>
-          <Input placeholder="University of the Philippines" className="h-12 rounded-xl" />
+          <Input placeholder="University of the Philippines" className="h-12 rounded-xl" value={school} onChange={(e) => setSchool(e.target.value)} />
         </div>
 
         <div className="space-y-2">
           <Label>Year Level</Label>
-          <Select>
+          <Select value={yearLevel} onValueChange={setYearLevel}>
             <SelectTrigger className="h-12 rounded-xl">
               <SelectValue placeholder="Select year level" />
             </SelectTrigger>
@@ -58,6 +120,9 @@ export default function SignUpScreen() {
               type={showPassword ? "text" : "password"}
               placeholder="Create a strong password"
               className="h-12 rounded-xl pr-12"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="new-password"
             />
             <button
               type="button"
@@ -71,11 +136,11 @@ export default function SignUpScreen() {
 
         <div className="space-y-2">
           <Label>Confirm Password</Label>
-          <Input type="password" placeholder="Re-enter password" className="h-12 rounded-xl" />
+          <Input type="password" placeholder="Re-enter password" className="h-12 rounded-xl" value={confirm} onChange={(e) => setConfirm(e.target.value)} autoComplete="new-password" />
         </div>
 
-        <Button className="w-full h-12 rounded-xl text-base font-semibold mt-4" onClick={() => navigate("/onboarding")}>
-          Sign Up
+        <Button type="submit" disabled={loading} className="w-full h-12 rounded-xl text-base font-semibold mt-4">
+          {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Sign Up"}
         </Button>
 
         <div className="relative my-6">
@@ -83,16 +148,22 @@ export default function SignUpScreen() {
           <div className="relative flex justify-center text-xs"><span className="bg-background px-2 text-muted-foreground">or</span></div>
         </div>
 
-        <Button variant="outline" className="w-full h-12 rounded-xl text-base">
-          <img src="https://www.google.com/favicon.ico" className="h-5 w-5 mr-2" alt="" />
-          Continue with Google
+        <Button type="button" variant="outline" disabled={googleLoading} onClick={handleGoogle} className="w-full h-12 rounded-xl text-base">
+          {googleLoading ? (
+            <Loader2 className="h-5 w-5 animate-spin" />
+          ) : (
+            <>
+              <img src="https://www.google.com/favicon.ico" className="h-5 w-5 mr-2" alt="" />
+              Continue with Google
+            </>
+          )}
         </Button>
 
         <p className="text-center text-sm text-muted-foreground mt-4">
           Already have an account?{" "}
-          <button onClick={() => navigate("/login")} className="text-primary font-semibold">Log In</button>
+          <button type="button" onClick={() => navigate("/login")} className="text-primary font-semibold">Log In</button>
         </p>
-      </div>
+      </form>
     </div>
   );
 }
