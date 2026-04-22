@@ -1,6 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import BottomNav from "@/components/BottomNav";
 import { User, BookOpen, FileText, Zap, Clock, ChevronRight, TrendingUp } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -47,11 +49,19 @@ export default function ProfilePage() {
             { label: "Edit Profile", path: "/profile/edit" },
             { label: "App Settings", path: "/settings" },
             { label: "Help & Feedback", path: "/help" },
-            { label: "Sign Out", path: "/welcome" },
+            { label: "Sign Out", path: null as string | null },
           ].map((item) => (
             <button
               key={item.label}
-              onClick={() => item.path && navigate(item.path)}
+              onClick={async () => {
+                if (item.path) {
+                  navigate(item.path);
+                } else {
+                  await supabase.auth.signOut();
+                  toast.success("Signed out");
+                  navigate("/welcome");
+                }
+              }}
               className="w-full text-left px-4 py-3.5 text-sm font-medium rounded-xl hover:bg-muted transition-colors"
             >
               {item.label}

@@ -1,8 +1,10 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { AuthProvider } from "@/hooks/useAuth";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 import SplashScreen from "./pages/SplashScreen";
 import WelcomeScreen from "./pages/WelcomeScreen";
@@ -30,42 +32,47 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+const protect = (el: JSX.Element) => <ProtectedRoute>{el}</ProtectedRoute>;
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <div className="mx-auto w-full max-w-[430px] min-h-screen relative bg-background shadow-2xl">
-          <Routes>
-            <Route path="/" element={<SplashScreen />} />
-            <Route path="/welcome" element={<WelcomeScreen />} />
-            <Route path="/signup" element={<SignUpScreen />} />
-            <Route path="/login" element={<LoginScreen />} />
-            <Route path="/onboarding" element={<OnboardingScreen />} />
-            <Route path="/home" element={<HomeDashboard />} />
-            <Route path="/subjects" element={<SubjectsPage />} />
-            <Route path="/subjects/add" element={<AddSubjectScreen />} />
-            <Route path="/subjects/:id" element={<SubjectFolderScreen />} />
-            <Route path="/subjects/:id/chat" element={<AIChatScreen />} />
-            <Route path="/practice/setup" element={<PracticeSetupPage />} />
-            <Route path="/practice/quiz" element={<ActiveQuizPage />} />
-            <Route path="/practice/results" element={<QuizResultsPage />} />
-            <Route path="/practice" element={<PracticePage />} />
-            <Route path="/schedule" element={<SchedulePage />} />
-            <Route path="/schedule/add-exam" element={<AddExamDatePage />} />
-            <Route path="/schedule/ai-plan" element={<AIStudyPlanPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/profile/edit" element={<EditProfilePage />} />
-            <Route path="/settings" element={<AppSettingsPage />} />
-            <Route path="/scores" element={<ScoreTrackerPage />} />
-            <Route path="/help" element={<HelpFeedbackPage />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </div>
+        <AuthProvider>
+          <div className="mx-auto w-full max-w-[430px] min-h-screen relative bg-background shadow-2xl">
+            <Routes>
+              <Route path="/" element={<SplashScreen />} />
+              <Route path="/welcome" element={<WelcomeScreen />} />
+              <Route path="/signup" element={<SignUpScreen />} />
+              <Route path="/login" element={<LoginScreen />} />
+              <Route path="/onboarding" element={protect(<OnboardingScreen />)} />
+              <Route path="/home" element={protect(<HomeDashboard />)} />
+              <Route path="/subjects" element={protect(<SubjectsPage />)} />
+              <Route path="/subjects/add" element={protect(<AddSubjectScreen />)} />
+              <Route path="/subjects/:id" element={protect(<SubjectFolderScreen />)} />
+              <Route path="/subjects/:id/chat" element={protect(<AIChatScreen />)} />
+              <Route path="/practice/setup" element={protect(<PracticeSetupPage />)} />
+              <Route path="/practice/quiz" element={protect(<ActiveQuizPage />)} />
+              <Route path="/practice/results" element={protect(<QuizResultsPage />)} />
+              <Route path="/practice" element={protect(<PracticePage />)} />
+              <Route path="/schedule" element={protect(<SchedulePage />)} />
+              <Route path="/schedule/add-exam" element={protect(<AddExamDatePage />)} />
+              <Route path="/schedule/ai-plan" element={protect(<AIStudyPlanPage />)} />
+              <Route path="/profile" element={protect(<ProfilePage />)} />
+              <Route path="/profile/edit" element={protect(<EditProfilePage />)} />
+              <Route path="/settings" element={protect(<AppSettingsPage />)} />
+              <Route path="/scores" element={protect(<ScoreTrackerPage />)} />
+              <Route path="/help" element={protect(<HelpFeedbackPage />)} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </div>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
 );
 
 export default App;
+
