@@ -1,14 +1,17 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function SplashScreen() {
   const navigate = useNavigate();
+  const { session, loading } = useAuth();
 
   useEffect(() => {
-    const timer = setTimeout(() => navigate("/welcome"), 2500);
+    if (loading) return;
+    const timer = setTimeout(() => navigate(session ? "/home" : "/welcome"), 1500);
     return () => clearTimeout(timer);
-  }, [navigate]);
+  }, [navigate, session, loading]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background">
