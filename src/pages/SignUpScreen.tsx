@@ -83,7 +83,7 @@ export default function SignUpScreen() {
 
       <form onSubmit={handleSignup} className="space-y-4">
         <div className="space-y-2">
-          <Label>Full Name</Label>
+          <Label>Name</Label>
           <Input placeholder="Juan Dela Cruz" className="h-12 rounded-xl" value={fullName} onChange={(e) => setFullName(e.target.value)} />
         </div>
 
