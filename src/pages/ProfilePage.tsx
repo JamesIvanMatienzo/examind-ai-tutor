@@ -1,29 +1,36 @@
 import { useNavigate } from "react-router-dom";
 import BottomNav from "@/components/BottomNav";
-import { User, BookOpen, FileText, Zap, Clock, ChevronRight, TrendingUp } from "lucide-react";
+import { BookOpen, FileText, Zap, Clock, ChevronRight, TrendingUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useDisplayName, useProfile } from "@/hooks/useProfile";
+import { useSubjects } from "@/hooks/useSubjects";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
+  const { name, initial, email } = useDisplayName();
+  const { data: profile } = useProfile();
+  const { data: subjects = [] } = useSubjects();
+
+  const subtitle = [profile?.school_name, profile?.year_level].filter(Boolean).join(" · ") || email || "";
 
   return (
     <div className="min-h-screen bg-surface pb-20">
       <div className="bg-card px-6 pt-12 pb-6 flex flex-col items-center border-b">
         <div className="w-20 h-20 rounded-full bg-primary flex items-center justify-center mb-3">
-          <span className="text-primary-foreground text-2xl font-bold">I</span>
+          <span className="text-primary-foreground text-2xl font-bold">{initial}</span>
         </div>
-        <h1 className="text-xl font-bold">Ivan Dela Cruz</h1>
-        <p className="text-sm text-muted-foreground">University of the Philippines · 3rd Year</p>
+        <h1 className="text-xl font-bold">{name}</h1>
+        {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
       </div>
 
       <div className="px-6 py-4">
         <div className="grid grid-cols-2 gap-3 mb-6">
           {[
-            { icon: BookOpen, label: "Subjects", value: "4" },
-            { icon: FileText, label: "Files", value: "30" },
-            { icon: Zap, label: "Questions", value: "142" },
-            { icon: Clock, label: "Study Hours", value: "18" },
+            { icon: BookOpen, label: "Subjects", value: String(subjects.length) },
+            { icon: FileText, label: "Files", value: "0" },
+            { icon: Zap, label: "Questions", value: "0" },
+            { icon: Clock, label: "Study Hours", value: "0" },
           ].map((stat) => (
             <div key={stat.label} className="bg-card border rounded-xl p-4 flex items-center gap-3">
               <stat.icon className="h-5 w-5 text-primary" />
