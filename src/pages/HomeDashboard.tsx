@@ -31,7 +31,7 @@ export default function HomeDashboard() {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm text-muted-foreground">Good morning,</p>
-            <h1 className="text-2xl font-bold">{name} 👋</h1>
+            <h1 className="text-2xl font-bold"><span>{name}</span> <span>👋</span></h1>
           </div>
           <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
             <span className="text-primary-foreground text-sm font-bold">{initial}</span>
