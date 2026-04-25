@@ -1,22 +1,17 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Plus, FileText, Image, BookOpen, MessageSquare, Zap, BarChart3, Sparkles } from "lucide-react";
+import { ArrowLeft, Plus, FileText, Image as ImageIcon, MessageSquare, Zap, BarChart3, Sparkles, Trash2, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-
-const subjectData: Record<string, { name: string; code: string; professor: string; daysUntilExam: number; color: string }> = {
-  "1": { name: "Mathematics", code: "MATH 101", professor: "Dr. Santos", daysUntilExam: 2, color: "#D85A30" },
-  "2": { name: "Physics", code: "PHYS 201", professor: "Prof. Reyes", daysUntilExam: 5, color: "#1D9E75" },
-  "3": { name: "Filipino", code: "FIL 101", professor: "Prof. Cruz", daysUntilExam: 10, color: "#534AB7" },
-  "4": { name: "History", code: "HIST 101", professor: "Dr. Garcia", daysUntilExam: 14, color: "#EF9F27" },
-};
-
-const files = [
-  { name: "Midterm Exam 2024.pdf", type: "Exam", date: "Mar 15, 2024", icon: FileText },
-  { name: "Quiz 3 - Derivatives.jpg", type: "Quiz", date: "Mar 10, 2024", icon: Image },
-  { name: "Module 5 - Integration.pdf", type: "Module", date: "Mar 5, 2024", icon: BookOpen },
-  { name: "Handwritten Notes Ch.3.jpg", type: "Notes", date: "Feb 28, 2024", icon: Image },
-];
+import { useSubjects, daysUntil } from "@/hooks/useSubjects";
+import {
+  useSubjectFiles,
+  useUploadSubjectFile,
+  useDeleteSubjectFile,
+  getSubjectFileUrl,
+  type SubjectFile,
+} from "@/hooks/useSubjectFiles";
+import { toast } from "sonner";
 
 const typeColors: Record<string, string> = {
   Exam: "bg-primary text-primary-foreground",
@@ -25,31 +20,85 @@ const typeColors: Record<string, string> = {
   Notes: "bg-amber-100 text-amber-700",
 };
 
+function formatBytes(b: number | null): string {
+  if (!b) return "";
+  if (b < 1024) return `${b} B`;
+  if (b < 1024 * 1024) return `${(b / 1024).toFixed(1)} KB`;
+  return `${(b / 1024 / 1024).toFixed(1)} MB`;
+}
+
+function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+}
+
+function isImage(mime: string | null, name: string) {
+  return (mime?.startsWith("image/")) || /\.(png|jpe?g|gif|webp|heic)$/i.test(name);
+}
+
 const tabs = ["Files", "AI Tutor", "Practice", "Insights"];
 
 export default function SubjectFolderScreen() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("Files");
-  const subject = subjectData[id || "1"] || subjectData["1"];
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const { data: subjects } = useSubjects();
+  const subject = subjects?.find((s) => s.id === id);
+  const { data: files = [], isLoading: filesLoading } = useSubjectFiles(id);
+  const upload = useUploadSubjectFile(id);
+  const del = useDeleteSubjectFile(id);
+
+  const days = subject ? daysUntil(subject.exam_date) : null;
+  const headerColor = subject?.color ?? "#534AB7";
+
+  const handleFiles = async (list: FileList | null) => {
+    if (!list || list.length === 0) return;
+    for (const f of Array.from(list)) {
+      try {
+        await upload.mutateAsync(f);
+        toast.success(`Uploaded ${f.name}`);
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : `Failed to upload ${f.name}`);
+      }
+    }
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const openFile = async (f: SubjectFile) => {
+    const url = await getSubjectFileUrl(f.storage_path);
+    if (url) window.open(url, "_blank");
+    else toast.error("Could not open file");
+  };
 
   return (
-    <div className="min-h-screen bg-surface">
+    <div className="min-h-screen bg-surface pb-32">
       {/* Header */}
-      <div className="px-6 pt-10 pb-4" style={{ backgroundColor: subject.color }}>
+      <div className="px-6 pt-10 pb-4" style={{ backgroundColor: headerColor }}>
         <div className="flex items-center gap-3 mb-3">
           <button onClick={() => navigate(-1)} className="text-white/80">
             <ArrowLeft className="h-6 w-6" />
           </button>
           <div className="flex-1">
-            <h1 className="text-xl font-bold text-white">{subject.name}</h1>
-            <p className="text-white/70 text-xs">{subject.professor}</p>
+            <h1 className="text-xl font-bold text-white">{subject?.name ?? "Subject"}</h1>
+            <p className="text-white/70 text-xs">{subject?.code ?? ""}</p>
           </div>
-          <span className="bg-white/20 text-white text-xs font-medium px-3 py-1 rounded-full">
-            {subject.daysUntilExam}d left
-          </span>
+          {days !== null && (
+            <span className="bg-white/20 text-white text-xs font-medium px-3 py-1 rounded-full">
+              {days}d left
+            </span>
+          )}
         </div>
       </div>
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        multiple
+        className="hidden"
+        accept="image/*,application/pdf,.doc,.docx,.txt"
+        onChange={(e) => handleFiles(e.target.files)}
+      />
 
       {/* Tabs */}
       <div className="bg-card border-b px-4">
@@ -82,45 +131,86 @@ export default function SubjectFolderScreen() {
                 <p className="text-[10px] text-muted-foreground">Files</p>
               </div>
               <div className="bg-card border rounded-lg px-3 py-2 flex-1 text-center">
-                <p className="text-lg font-bold">2</p>
-                <p className="text-[10px] text-muted-foreground">Analyzed</p>
+                <p className="text-lg font-bold">
+                  {formatBytes(files.reduce((s, f) => s + (f.size_bytes ?? 0), 0)) || "0 B"}
+                </p>
+                <p className="text-[10px] text-muted-foreground">Total size</p>
               </div>
               <div className="bg-card border rounded-lg px-3 py-2 flex-1 text-center">
-                <p className="text-lg font-bold">24</p>
-                <p className="text-[10px] text-muted-foreground">Questions</p>
+                <p className="text-lg font-bold">{files.filter((f) => isImage(f.mime_type, f.name)).length}</p>
+                <p className="text-[10px] text-muted-foreground">Images</p>
               </div>
             </div>
 
-            {files.map((file, i) => (
-              <div key={i} className="bg-card border rounded-xl p-4 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-surface flex items-center justify-center shrink-0">
-                  <file.icon className="h-5 w-5 text-muted-foreground" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{file.name}</p>
-                  <p className="text-xs text-muted-foreground">{file.date}</p>
-                </div>
-                <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${typeColors[file.type]}`}>
-                  {file.type}
-                </span>
+            {filesLoading && (
+              <div className="flex justify-center py-8">
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
               </div>
-            ))}
+            )}
+
+            {!filesLoading && files.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <FileText className="h-12 w-12 text-muted-foreground/30 mb-3" />
+                <p className="text-muted-foreground text-sm">No files yet</p>
+                <p className="text-muted-foreground text-xs mt-1">Tap + to upload PDFs, images, or notes</p>
+              </div>
+            )}
+
+            {files.map((file) => {
+              const Icon = isImage(file.mime_type, file.name) ? ImageIcon : FileText;
+              return (
+                <div key={file.id} className="bg-card border rounded-xl p-4 flex items-center gap-3">
+                  <button
+                    onClick={() => openFile(file)}
+                    className="w-10 h-10 rounded-lg bg-surface flex items-center justify-center shrink-0"
+                  >
+                    <Icon className="h-5 w-5 text-muted-foreground" />
+                  </button>
+                  <button onClick={() => openFile(file)} className="flex-1 min-w-0 text-left">
+                    <p className="text-sm font-medium truncate">{file.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {formatDate(file.created_at)} · {formatBytes(file.size_bytes)}
+                    </p>
+                  </button>
+                  <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${typeColors[file.file_type] ?? typeColors.Notes}`}>
+                    {file.file_type}
+                  </span>
+                  <button
+                    onClick={() => {
+                      if (confirm(`Delete ${file.name}?`)) del.mutate(file);
+                    }}
+                    className="text-muted-foreground hover:text-destructive p-1"
+                    aria-label="Delete file"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              );
+            })}
 
             {/* Upload FAB */}
             <motion.button
               whileTap={{ scale: 0.9 }}
-              className="fixed right-6 bottom-24 w-14 h-14 rounded-full bg-primary flex items-center justify-center shadow-lg"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={upload.isPending}
+              className="fixed right-6 bottom-24 w-14 h-14 rounded-full bg-primary flex items-center justify-center shadow-lg disabled:opacity-60"
+              aria-label="Upload file"
             >
-              <Plus className="h-6 w-6 text-primary-foreground" />
+              {upload.isPending ? (
+                <Loader2 className="h-6 w-6 text-primary-foreground animate-spin" />
+              ) : (
+                <Plus className="h-6 w-6 text-primary-foreground" />
+              )}
             </motion.button>
 
-            {/* Analyze Button */}
-            <div className="fixed bottom-20 left-0 right-0 px-6 pb-4 bg-gradient-to-t from-surface to-transparent pt-8">
-              <Button className="w-full h-12 rounded-xl text-base font-semibold gap-2">
-                <Sparkles className="h-5 w-5" />
-                Analyze all files with AI
-              </Button>
-            </div>
+            {files.length > 0 && (
+              <div className="fixed bottom-20 left-0 right-0 px-6 pb-4 bg-gradient-to-t from-surface to-transparent pt-8">
+                <Button className="w-full h-12 rounded-xl text-base font-semibold gap-2">
+                  <Sparkles className="h-5 w-5" />
+                  Analyze all files with AI
+                </Button>
+              </div>
+            )}
           </div>
         )}
 
