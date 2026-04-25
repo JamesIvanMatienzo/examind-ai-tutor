@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { BookOpen, Brain, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import logo from "@/assets/logo.png";
 
 export default function WelcomeScreen() {
   const navigate = useNavigate();
@@ -32,10 +33,8 @@ export default function WelcomeScreen() {
 
         {/* Logo & text */}
         <div className="text-center space-y-3">
-          <div className="flex items-center justify-center gap-2">
-            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground text-lg font-bold">E</span>
-            </div>
+          <div className="flex items-center justify-center gap-3">
+            <img src={logo} alt="ExaMind logo" className="w-12 h-12 rounded-xl object-cover" />
             <h1 className="text-3xl font-bold text-foreground">ExaMind</h1>
           </div>
           <p className="text-muted-foreground">Your personal AI exam tutor</p>
