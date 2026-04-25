@@ -50,7 +50,7 @@ export default function EditProfilePage() {
 
         <div className="space-y-4">
           {[
-            { key: "name", label: "Full Name" },
+            { key: "name", label: "Name" },
             { key: "email", label: "Email" },
             { key: "university", label: "University" },
             { key: "course", label: "Course" },
