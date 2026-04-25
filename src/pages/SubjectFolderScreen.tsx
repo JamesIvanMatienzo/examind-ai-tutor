@@ -1,22 +1,17 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Plus, FileText, Image, BookOpen, MessageSquare, Zap, BarChart3, Sparkles } from "lucide-react";
+import { ArrowLeft, Plus, FileText, Image as ImageIcon, MessageSquare, Zap, BarChart3, Sparkles, Trash2, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-
-const subjectData: Record<string, { name: string; code: string; professor: string; daysUntilExam: number; color: string }> = {
-  "1": { name: "Mathematics", code: "MATH 101", professor: "Dr. Santos", daysUntilExam: 2, color: "#D85A30" },
-  "2": { name: "Physics", code: "PHYS 201", professor: "Prof. Reyes", daysUntilExam: 5, color: "#1D9E75" },
-  "3": { name: "Filipino", code: "FIL 101", professor: "Prof. Cruz", daysUntilExam: 10, color: "#534AB7" },
-  "4": { name: "History", code: "HIST 101", professor: "Dr. Garcia", daysUntilExam: 14, color: "#EF9F27" },
-};
-
-const files = [
-  { name: "Midterm Exam 2024.pdf", type: "Exam", date: "Mar 15, 2024", icon: FileText },
-  { name: "Quiz 3 - Derivatives.jpg", type: "Quiz", date: "Mar 10, 2024", icon: Image },
-  { name: "Module 5 - Integration.pdf", type: "Module", date: "Mar 5, 2024", icon: BookOpen },
-  { name: "Handwritten Notes Ch.3.jpg", type: "Notes", date: "Feb 28, 2024", icon: Image },
-];
+import { useSubjects, daysUntil } from "@/hooks/useSubjects";
+import {
+  useSubjectFiles,
+  useUploadSubjectFile,
+  useDeleteSubjectFile,
+  getSubjectFileUrl,
+  type SubjectFile,
+} from "@/hooks/useSubjectFiles";
+import { toast } from "sonner";
 
 const typeColors: Record<string, string> = {
   Exam: "bg-primary text-primary-foreground",
@@ -24,6 +19,21 @@ const typeColors: Record<string, string> = {
   Module: "bg-emerald-100 text-emerald-700",
   Notes: "bg-amber-100 text-amber-700",
 };
+
+function formatBytes(b: number | null): string {
+  if (!b) return "";
+  if (b < 1024) return `${b} B`;
+  if (b < 1024 * 1024) return `${(b / 1024).toFixed(1)} KB`;
+  return `${(b / 1024 / 1024).toFixed(1)} MB`;
+}
+
+function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+}
+
+function isImage(mime: string | null, name: string) {
+  return (mime?.startsWith("image/")) || /\.(png|jpe?g|gif|webp|heic)$/i.test(name);
+}
 
 const tabs = ["Files", "AI Tutor", "Practice", "Insights"];
 
