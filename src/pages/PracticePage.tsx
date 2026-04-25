@@ -1,27 +1,17 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Zap, Clock, BookOpen, History, ChevronRight } from "lucide-react";
+import { Zap, BookOpen, History, ChevronRight } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
-
-const subjects = [
-  { id: "1", name: "Mathematics", code: "MATH 101", color: "#D85A30" },
-  { id: "2", name: "Physics", code: "PHYS 201", color: "#1D9E75" },
-  { id: "3", name: "Filipino", code: "FIL 101", color: "#534AB7" },
-  { id: "4", name: "History", code: "HIST 101", color: "#EF9F27" },
-];
-
-const recentAttempts = [
-  { id: "r1", subject: "Mathematics", topic: "Chapter 3 — Derivatives", items: 20, score: 16, date: "Apr 14" },
-  { id: "r2", subject: "Physics", topic: "Kinematics", items: 30, score: 22, date: "Apr 12" },
-  { id: "r3", subject: "Filipino", topic: "Retorika", items: 10, score: 9, date: "Apr 10" },
-];
+import { useSubjects } from "@/hooks/useSubjects";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type Tab = "generated" | "saved" | "history";
 
 export default function PracticePage() {
   const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>("generated");
+  const { data: subjects = [], isLoading } = useSubjects();
 
   const tabs: { key: Tab; label: string; icon: typeof Zap }[] = [
     { key: "generated", label: "Generated", icon: Zap },
@@ -77,25 +67,36 @@ export default function PracticePage() {
             {/* By Subject */}
             <div>
               <h2 className="text-xs font-semibold text-muted-foreground mb-3">BY SUBJECT</h2>
-              <div className="space-y-2">
-                {subjects.map((s) => (
-                  <motion.button
-                    key={s.id}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => navigate(`/practice/setup?subject=${s.id}`)}
-                    className="w-full bg-card border rounded-xl p-3 flex items-center gap-3 text-left"
-                  >
-                    <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: s.color + "20" }}>
-                      <BookOpen className="h-4 w-4" style={{ color: s.color }} />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-semibold">{s.name}</p>
-                      <p className="text-xs text-muted-foreground">{s.code}</p>
-                    </div>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                  </motion.button>
-                ))}
-              </div>
+              {isLoading ? (
+                <div className="space-y-2">
+                  <Skeleton className="h-14 rounded-xl" />
+                  <Skeleton className="h-14 rounded-xl" />
+                </div>
+              ) : subjects.length === 0 ? (
+                <div className="bg-card border border-dashed rounded-xl p-4 text-center text-xs text-muted-foreground">
+                  Add a subject to start generating practice exams.
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {subjects.map((s) => (
+                    <motion.button
+                      key={s.id}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => navigate(`/practice/setup?subject=${s.id}`)}
+                      className="w-full bg-card border rounded-xl p-3 flex items-center gap-3 text-left"
+                    >
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: s.color + "20" }}>
+                        <BookOpen className="h-4 w-4" style={{ color: s.color }} />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold">{s.name}</p>
+                        <p className="text-xs text-muted-foreground">{s.code ?? "No code"}</p>
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                    </motion.button>
+                  ))}
+                </div>
+              )}
             </div>
           </>
         )}
