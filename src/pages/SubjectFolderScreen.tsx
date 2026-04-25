@@ -41,25 +41,64 @@ export default function SubjectFolderScreen() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("Files");
-  const subject = subjectData[id || "1"] || subjectData["1"];
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const { data: subjects } = useSubjects();
+  const subject = subjects?.find((s) => s.id === id);
+  const { data: files = [], isLoading: filesLoading } = useSubjectFiles(id);
+  const upload = useUploadSubjectFile(id);
+  const del = useDeleteSubjectFile(id);
+
+  const days = subject ? daysUntil(subject.exam_date) : null;
+  const headerColor = subject?.color ?? "#534AB7";
+
+  const handleFiles = async (list: FileList | null) => {
+    if (!list || list.length === 0) return;
+    for (const f of Array.from(list)) {
+      try {
+        await upload.mutateAsync(f);
+        toast.success(`Uploaded ${f.name}`);
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : `Failed to upload ${f.name}`);
+      }
+    }
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const openFile = async (f: SubjectFile) => {
+    const url = await getSubjectFileUrl(f.storage_path);
+    if (url) window.open(url, "_blank");
+    else toast.error("Could not open file");
+  };
 
   return (
-    <div className="min-h-screen bg-surface">
+    <div className="min-h-screen bg-surface pb-32">
       {/* Header */}
-      <div className="px-6 pt-10 pb-4" style={{ backgroundColor: subject.color }}>
+      <div className="px-6 pt-10 pb-4" style={{ backgroundColor: headerColor }}>
         <div className="flex items-center gap-3 mb-3">
           <button onClick={() => navigate(-1)} className="text-white/80">
             <ArrowLeft className="h-6 w-6" />
           </button>
           <div className="flex-1">
-            <h1 className="text-xl font-bold text-white">{subject.name}</h1>
-            <p className="text-white/70 text-xs">{subject.professor}</p>
+            <h1 className="text-xl font-bold text-white">{subject?.name ?? "Subject"}</h1>
+            <p className="text-white/70 text-xs">{subject?.code ?? ""}</p>
           </div>
-          <span className="bg-white/20 text-white text-xs font-medium px-3 py-1 rounded-full">
-            {subject.daysUntilExam}d left
-          </span>
+          {days !== null && (
+            <span className="bg-white/20 text-white text-xs font-medium px-3 py-1 rounded-full">
+              {days}d left
+            </span>
+          )}
         </div>
       </div>
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        multiple
+        className="hidden"
+        accept="image/*,application/pdf,.doc,.docx,.txt"
+        onChange={(e) => handleFiles(e.target.files)}
+      />
 
       {/* Tabs */}
       <div className="bg-card border-b px-4">
