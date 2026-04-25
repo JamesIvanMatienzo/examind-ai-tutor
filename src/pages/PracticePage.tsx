@@ -102,29 +102,10 @@ export default function PracticePage() {
         )}
 
         {tab === "history" && (
-          <div>
-            <h2 className="text-xs font-semibold text-muted-foreground mb-3">RECENT ATTEMPTS</h2>
-            <div className="space-y-2">
-              {recentAttempts.map((a) => {
-                const pct = Math.round((a.score / a.items) * 100);
-                return (
-                  <div key={a.id} className="bg-card border rounded-xl p-3">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-semibold">{a.subject}</p>
-                        <p className="text-xs text-muted-foreground">{a.topic} · {a.items} items</p>
-                      </div>
-                      <div className="text-right">
-                        <p className={`text-sm font-bold ${pct >= 75 ? "text-success" : pct >= 50 ? "text-warning" : "text-destructive"}`}>
-                          {pct}%
-                        </p>
-                        <p className="text-[10px] text-muted-foreground">{a.date}</p>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <History className="h-12 w-12 text-muted-foreground/20 mb-3" />
+            <p className="text-sm text-muted-foreground">No practice attempts yet</p>
+            <p className="text-xs text-muted-foreground mt-1">Take a practice exam to see your history</p>
           </div>
         )}
 
