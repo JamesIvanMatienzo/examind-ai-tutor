@@ -131,45 +131,86 @@ export default function SubjectFolderScreen() {
                 <p className="text-[10px] text-muted-foreground">Files</p>
               </div>
               <div className="bg-card border rounded-lg px-3 py-2 flex-1 text-center">
-                <p className="text-lg font-bold">2</p>
-                <p className="text-[10px] text-muted-foreground">Analyzed</p>
+                <p className="text-lg font-bold">
+                  {formatBytes(files.reduce((s, f) => s + (f.size_bytes ?? 0), 0)) || "0 B"}
+                </p>
+                <p className="text-[10px] text-muted-foreground">Total size</p>
               </div>
               <div className="bg-card border rounded-lg px-3 py-2 flex-1 text-center">
-                <p className="text-lg font-bold">24</p>
-                <p className="text-[10px] text-muted-foreground">Questions</p>
+                <p className="text-lg font-bold">{files.filter((f) => isImage(f.mime_type, f.name)).length}</p>
+                <p className="text-[10px] text-muted-foreground">Images</p>
               </div>
             </div>
 
-            {files.map((file, i) => (
-              <div key={i} className="bg-card border rounded-xl p-4 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-surface flex items-center justify-center shrink-0">
-                  <file.icon className="h-5 w-5 text-muted-foreground" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{file.name}</p>
-                  <p className="text-xs text-muted-foreground">{file.date}</p>
-                </div>
-                <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${typeColors[file.type]}`}>
-                  {file.type}
-                </span>
+            {filesLoading && (
+              <div className="flex justify-center py-8">
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
               </div>
-            ))}
+            )}
+
+            {!filesLoading && files.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <FileText className="h-12 w-12 text-muted-foreground/30 mb-3" />
+                <p className="text-muted-foreground text-sm">No files yet</p>
+                <p className="text-muted-foreground text-xs mt-1">Tap + to upload PDFs, images, or notes</p>
+              </div>
+            )}
+
+            {files.map((file) => {
+              const Icon = isImage(file.mime_type, file.name) ? ImageIcon : FileText;
+              return (
+                <div key={file.id} className="bg-card border rounded-xl p-4 flex items-center gap-3">
+                  <button
+                    onClick={() => openFile(file)}
+                    className="w-10 h-10 rounded-lg bg-surface flex items-center justify-center shrink-0"
+                  >
+                    <Icon className="h-5 w-5 text-muted-foreground" />
+                  </button>
+                  <button onClick={() => openFile(file)} className="flex-1 min-w-0 text-left">
+                    <p className="text-sm font-medium truncate">{file.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {formatDate(file.created_at)} · {formatBytes(file.size_bytes)}
+                    </p>
+                  </button>
+                  <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${typeColors[file.file_type] ?? typeColors.Notes}`}>
+                    {file.file_type}
+                  </span>
+                  <button
+                    onClick={() => {
+                      if (confirm(`Delete ${file.name}?`)) del.mutate(file);
+                    }}
+                    className="text-muted-foreground hover:text-destructive p-1"
+                    aria-label="Delete file"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              );
+            })}
 
             {/* Upload FAB */}
             <motion.button
               whileTap={{ scale: 0.9 }}
-              className="fixed right-6 bottom-24 w-14 h-14 rounded-full bg-primary flex items-center justify-center shadow-lg"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={upload.isPending}
+              className="fixed right-6 bottom-24 w-14 h-14 rounded-full bg-primary flex items-center justify-center shadow-lg disabled:opacity-60"
+              aria-label="Upload file"
             >
-              <Plus className="h-6 w-6 text-primary-foreground" />
+              {upload.isPending ? (
+                <Loader2 className="h-6 w-6 text-primary-foreground animate-spin" />
+              ) : (
+                <Plus className="h-6 w-6 text-primary-foreground" />
+              )}
             </motion.button>
 
-            {/* Analyze Button */}
-            <div className="fixed bottom-20 left-0 right-0 px-6 pb-4 bg-gradient-to-t from-surface to-transparent pt-8">
-              <Button className="w-full h-12 rounded-xl text-base font-semibold gap-2">
-                <Sparkles className="h-5 w-5" />
-                Analyze all files with AI
-              </Button>
-            </div>
+            {files.length > 0 && (
+              <div className="fixed bottom-20 left-0 right-0 px-6 pb-4 bg-gradient-to-t from-surface to-transparent pt-8">
+                <Button className="w-full h-12 rounded-xl text-base font-semibold gap-2">
+                  <Sparkles className="h-5 w-5" />
+                  Analyze all files with AI
+                </Button>
+              </div>
+            )}
           </div>
         )}
 
