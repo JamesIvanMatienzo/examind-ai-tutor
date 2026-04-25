@@ -2,13 +2,9 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Plus, Upload, Zap, Calendar, Sparkles } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
-
-const subjects = [
-  { id: "1", name: "Mathematics", code: "MATH 101", files: 12, daysUntilExam: 2, color: "#D85A30" },
-  { id: "2", name: "Physics", code: "PHYS 201", files: 8, daysUntilExam: 5, color: "#1D9E75" },
-  { id: "3", name: "Filipino", code: "FIL 101", files: 6, daysUntilExam: 10, color: "#534AB7" },
-  { id: "4", name: "History", code: "HIST 101", files: 4, daysUntilExam: 14, color: "#EF9F27" },
-];
+import { useSubjects, daysUntil } from "@/hooks/useSubjects";
+import { useDisplayName } from "@/hooks/useProfile";
+import { Skeleton } from "@/components/ui/skeleton";
 
 function getCountdownColor(days: number) {
   if (days <= 3) return "bg-destructive text-destructive-foreground";
@@ -18,8 +14,15 @@ function getCountdownColor(days: number) {
 
 export default function HomeDashboard() {
   const navigate = useNavigate();
+  const { name, initial } = useDisplayName();
+  const { data: subjects = [], isLoading } = useSubjects();
 
-  const urgentExam = subjects.find((s) => s.daysUntilExam <= 3);
+  const withDays = subjects
+    .map((s) => ({ ...s, daysUntilExam: daysUntil(s.exam_date) }))
+    .filter((s) => s.daysUntilExam !== null) as Array<typeof subjects[number] & { daysUntilExam: number }>;
+
+  const urgentExam = withDays.find((s) => s.daysUntilExam <= 3 && s.daysUntilExam >= 0);
+  const upcoming = [...withDays].sort((a, b) => a.daysUntilExam - b.daysUntilExam);
 
   return (
     <div className="min-h-screen bg-surface pb-20">
@@ -28,10 +31,10 @@ export default function HomeDashboard() {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm text-muted-foreground">Good morning,</p>
-            <h1 className="text-2xl font-bold">Ivan 👋</h1>
+            <h1 className="text-2xl font-bold">{name} 👋</h1>
           </div>
           <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground text-sm font-bold">I</span>
+            <span className="text-primary-foreground text-sm font-bold">{initial}</span>
           </div>
         </div>
       </div>
@@ -50,7 +53,7 @@ export default function HomeDashboard() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold">
-                Your {urgentExam.name} exam is in {urgentExam.daysUntilExam} day{urgentExam.daysUntilExam > 1 ? "s" : ""}
+                Your {urgentExam.name} exam is in {urgentExam.daysUntilExam} day{urgentExam.daysUntilExam !== 1 ? "s" : ""}
               </p>
               <p className="text-xs text-muted-foreground">Tap to see your focus guide</p>
             </div>
@@ -58,12 +61,11 @@ export default function HomeDashboard() {
         )}
 
         {/* Upcoming Exams */}
-        <div>
-          <h2 className="text-sm font-semibold text-muted-foreground mb-3">UPCOMING EXAMS</h2>
-          <div className="flex gap-3 overflow-x-auto pb-1 -mx-1 px-1">
-            {subjects
-              .sort((a, b) => a.daysUntilExam - b.daysUntilExam)
-              .map((s) => (
+        {upcoming.length > 0 && (
+          <div>
+            <h2 className="text-sm font-semibold text-muted-foreground mb-3">UPCOMING EXAMS</h2>
+            <div className="flex gap-3 overflow-x-auto pb-1 -mx-1 px-1">
+              {upcoming.map((s) => (
                 <div key={s.id} className="bg-card rounded-xl p-3 min-w-[140px] border shrink-0">
                   <p className="text-sm font-semibold truncate">{s.name}</p>
                   <span className={`inline-block mt-2 text-xs font-medium px-2 py-0.5 rounded-full ${getCountdownColor(s.daysUntilExam)}`}>
@@ -71,8 +73,9 @@ export default function HomeDashboard() {
                   </span>
                 </div>
               ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Quick Actions */}
         <div>
@@ -98,31 +101,56 @@ export default function HomeDashboard() {
         {/* Subject Folders */}
         <div>
           <h2 className="text-sm font-semibold text-muted-foreground mb-3">YOUR SUBJECTS</h2>
-          <div className="grid grid-cols-2 gap-3">
-            {subjects.map((s) => (
+          {isLoading ? (
+            <div className="grid grid-cols-2 gap-3">
+              <Skeleton className="h-24 rounded-xl" />
+              <Skeleton className="h-24 rounded-xl" />
+            </div>
+          ) : subjects.length === 0 ? (
+            <div className="bg-card border border-dashed rounded-xl p-6 text-center">
+              <p className="text-sm text-muted-foreground mb-3">
+                No subjects yet. Add your first one to get started.
+              </p>
               <motion.button
-                key={s.id}
                 whileTap={{ scale: 0.97 }}
-                onClick={() => navigate(`/subjects/${s.id}`)}
-                className="bg-card border rounded-xl p-4 text-left relative overflow-hidden"
+                onClick={() => navigate("/subjects/add")}
+                className="inline-flex items-center gap-2 bg-primary text-primary-foreground rounded-xl px-4 py-2 text-sm font-medium"
               >
-                <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl" style={{ backgroundColor: s.color }} />
-                <p className="text-sm font-semibold pl-2">{s.name}</p>
-                <p className="text-xs text-muted-foreground pl-2 mt-1">{s.files} files</p>
-                <span className={`inline-block mt-2 ml-2 text-[10px] font-medium px-2 py-0.5 rounded-full ${getCountdownColor(s.daysUntilExam)}`}>
-                  {s.daysUntilExam}d
-                </span>
+                <Plus className="h-4 w-4" /> Add Subject
               </motion.button>
-            ))}
-            <motion.button
-              whileTap={{ scale: 0.97 }}
-              onClick={() => navigate("/subjects/add")}
-              className="bg-card border border-dashed rounded-xl p-4 flex flex-col items-center justify-center gap-2 text-muted-foreground"
-            >
-              <Plus className="h-6 w-6" />
-              <span className="text-xs font-medium">Add Subject</span>
-            </motion.button>
-          </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-3">
+              {subjects.map((s) => {
+                const days = daysUntil(s.exam_date);
+                return (
+                  <motion.button
+                    key={s.id}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => navigate(`/subjects/${s.id}`)}
+                    className="bg-card border rounded-xl p-4 text-left relative overflow-hidden"
+                  >
+                    <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl" style={{ backgroundColor: s.color }} />
+                    <p className="text-sm font-semibold pl-2">{s.name}</p>
+                    <p className="text-xs text-muted-foreground pl-2 mt-1">{s.code ?? "—"}</p>
+                    {days !== null && (
+                      <span className={`inline-block mt-2 ml-2 text-[10px] font-medium px-2 py-0.5 rounded-full ${getCountdownColor(days)}`}>
+                        {days}d
+                      </span>
+                    )}
+                  </motion.button>
+                );
+              })}
+              <motion.button
+                whileTap={{ scale: 0.97 }}
+                onClick={() => navigate("/subjects/add")}
+                className="bg-card border border-dashed rounded-xl p-4 flex flex-col items-center justify-center gap-2 text-muted-foreground"
+              >
+                <Plus className="h-6 w-6" />
+                <span className="text-xs font-medium">Add Subject</span>
+              </motion.button>
+            </div>
+          )}
         </div>
       </div>
 

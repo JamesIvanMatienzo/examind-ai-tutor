@@ -1,15 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Plus, MoreVertical } from "lucide-react";
+import { Search, Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import BottomNav from "@/components/BottomNav";
-
-const subjects = [
-  { id: "1", name: "Mathematics", code: "MATH 101", files: 12, daysUntilExam: 2, color: "#D85A30", lastAccessed: "Today" },
-  { id: "2", name: "Physics", code: "PHYS 201", files: 8, daysUntilExam: 5, color: "#1D9E75", lastAccessed: "Yesterday" },
-  { id: "3", name: "Filipino", code: "FIL 101", files: 6, daysUntilExam: 10, color: "#534AB7", lastAccessed: "2 days ago" },
-  { id: "4", name: "History", code: "HIST 101", files: 4, daysUntilExam: 14, color: "#EF9F27", lastAccessed: "3 days ago" },
-];
+import { useSubjects, daysUntil } from "@/hooks/useSubjects";
+import { Skeleton } from "@/components/ui/skeleton";
 
 function getCountdownColor(days: number) {
   if (days <= 3) return "bg-destructive text-destructive-foreground";
@@ -20,6 +15,7 @@ function getCountdownColor(days: number) {
 export default function SubjectsPage() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
+  const { data: subjects = [], isLoading } = useSubjects();
 
   const filtered = subjects.filter((s) =>
     s.name.toLowerCase().includes(search.toLowerCase())
@@ -41,24 +37,40 @@ export default function SubjectsPage() {
       </div>
 
       <div className="px-6 py-4 space-y-3">
-        {filtered.map((s) => (
-          <button
-            key={s.id}
-            onClick={() => navigate(`/subjects/${s.id}`)}
-            className="w-full bg-card border rounded-xl p-4 flex items-center gap-4 text-left"
-          >
-            <div className="w-12 h-12 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: s.color + "20" }}>
-              <span className="text-lg font-bold" style={{ color: s.color }}>{s.name[0]}</span>
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold text-sm">{s.name}</p>
-              <p className="text-xs text-muted-foreground">{s.code} · {s.files} files · {s.lastAccessed}</p>
-            </div>
-            <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full shrink-0 ${getCountdownColor(s.daysUntilExam)}`}>
-              {s.daysUntilExam}d
-            </span>
-          </button>
-        ))}
+        {isLoading ? (
+          <>
+            <Skeleton className="h-20 rounded-xl" />
+            <Skeleton className="h-20 rounded-xl" />
+          </>
+        ) : filtered.length === 0 ? (
+          <div className="text-center py-10 text-sm text-muted-foreground">
+            {search ? "No subjects match your search." : "No subjects yet. Tap the button below to add one."}
+          </div>
+        ) : (
+          filtered.map((s) => {
+            const days = daysUntil(s.exam_date);
+            return (
+              <button
+                key={s.id}
+                onClick={() => navigate(`/subjects/${s.id}`)}
+                className="w-full bg-card border rounded-xl p-4 flex items-center gap-4 text-left"
+              >
+                <div className="w-12 h-12 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: s.color + "20" }}>
+                  <span className="text-lg font-bold" style={{ color: s.color }}>{s.name[0]?.toUpperCase()}</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-sm">{s.name}</p>
+                  <p className="text-xs text-muted-foreground truncate">{s.code ?? "No course code"}</p>
+                </div>
+                {days !== null && (
+                  <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full shrink-0 ${getCountdownColor(days)}`}>
+                    {days}d
+                  </span>
+                )}
+              </button>
+            );
+          })
+        )}
 
         <button
           onClick={() => navigate("/subjects/add")}
