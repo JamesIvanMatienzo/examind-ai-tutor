@@ -64,6 +64,31 @@ export default function ProfilePage() {
                 if (item.path) {
                   navigate(item.path);
                 } else {
+                  // Check if this is a mock session and clean it up
+                  try {
+                    const storedAuth = localStorage.getItem("examind-mock-auth");
+                    if (storedAuth) {
+                      const authData = JSON.parse(storedAuth);
+                      const mockSession = authData.session;
+                      
+                      if (mockSession && mockSession.access_token === "mock-dev-token") {
+                        // Clean up mock session
+                        localStorage.removeItem("examind-mock-auth");
+                        // Also clean up Supabase storage
+                        const storageKey = `sb-${import.meta.env.VITE_SUPABASE_URL?.replace(/^https?:\/\//, '').replace(/\./g, '-')}-auth-token`;
+                        if (storageKey) {
+                          localStorage.removeItem(storageKey);
+                        }
+                        toast.success("Signed out");
+                        navigate("/welcome");
+                        return;
+                      }
+                    }
+                  } catch (error) {
+                    // If there's an error, just proceed with normal sign out
+                  }
+                  
+                  // Normal Supabase sign out
                   await supabase.auth.signOut();
                   toast.success("Signed out");
                   navigate("/welcome");
