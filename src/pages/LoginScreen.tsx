@@ -18,10 +18,80 @@ export default function LoginScreen() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    // #region agent log
+    const __debugPayload = {sessionId:'3fc829',runId:'pre-fix',hypothesisId:'H1',location:'src/pages/LoginScreen.tsx:handleLogin',message:'login_submit',data:{emailProvided:!!email,passwordProvided:!!password,emailDomain:(email.split('@')[1]||'')},timestamp:Date.now()};
+    fetch('http://127.0.0.1:7908/ingest/551beb29-a1a5-4555-a00f-0e435b967cb6',{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'3fc829'},body:JSON.stringify(__debugPayload)}).catch(()=>{});
+    fetch('/__debug_ingest',{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'3fc829'},body:JSON.stringify(__debugPayload)}).catch(()=>{});
+    // #endregion agent log
     if (!email || !password) {
       toast.error("Please enter your email and password");
       return;
     }
+    
+    // Check for hardcoded developer account
+    if (email === "admin@examind.com" && password === "password123") {
+      setLoading(true);
+      
+      // Create mock user session with proper Supabase User interface
+      const mockUser = {
+        id: "dev-1",
+        email: "admin@examind.com",
+        user_metadata: {
+          full_name: "Examind Admin",
+          name: "Examind Admin"
+        },
+        app_metadata: {},
+        aud: "authenticated",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        phone: "",
+        phone_confirmed_at: null,
+        email_confirmed_at: new Date().toISOString(),
+        role: "authenticated",
+        last_sign_in_at: new Date().toISOString(),
+      };
+
+      const mockSession = {
+        user: mockUser,
+        access_token: "mock-dev-token",
+        refresh_token: "mock-refresh-token",
+        expires_in: 3600,
+        expires_at: Math.floor(Date.now() / 1000) + 3600,
+        token_type: "bearer",
+      };
+
+      // Store mock session using Supabase's actual storage format
+      const storageKey = `sb-${import.meta.env.VITE_SUPABASE_URL?.replace(/^https?:\/\//, '').replace(/\./g, '-')}-auth-token`;
+      if (storageKey) {
+        localStorage.setItem(storageKey, JSON.stringify({
+          currentSession: mockSession,
+          expiresAt: mockSession.expires_at,
+        }));
+      }
+
+      // Also store a marker for our mock session
+      localStorage.setItem("examind-mock-auth", JSON.stringify({
+        user: mockUser,
+        session: mockSession,
+        expiresAt: mockSession.expires_at,
+      }));
+
+      // #region agent log
+      const __debugPayload = {sessionId:'3fc829',runId:'pre-fix',hypothesisId:'H1',location:'src/pages/LoginScreen.tsx:dev_login',message:'dev_login_stored_mock_session',data:{hasMarker:!!localStorage.getItem('examind-mock-auth'),storageKey,expiresAt:mockSession.expires_at},timestamp:Date.now()};
+      fetch('http://127.0.0.1:7908/ingest/551beb29-a1a5-4555-a00f-0e435b967cb6',{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'3fc829'},body:JSON.stringify(__debugPayload)}).catch(()=>{});
+      fetch('/__debug_ingest',{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'3fc829'},body:JSON.stringify(__debugPayload)}).catch(()=>{});
+      // #endregion agent log
+
+      // Navigate immediately after storing the session
+      // The AuthProvider will detect the mock session on next render
+      setLoading(false);
+      toast.success("Welcome back, Developer!");
+      navigate("/home");
+      
+      return;
+    }
+    
+    // Standard authentication flow for other credentials
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
