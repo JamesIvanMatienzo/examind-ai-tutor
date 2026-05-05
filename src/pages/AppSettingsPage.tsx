@@ -1,14 +1,16 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Moon, Bell, BellOff, Trash2, HardDrive } from "lucide-react";
+import { ArrowLeft, Moon, Bell, BellOff, Trash2, HardDrive, BookOpen, Trophy, FileText } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "@/hooks/use-toast";
+import { useSubjects } from "@/hooks/useSubjects";
 
 export default function AppSettingsPage() {
   const navigate = useNavigate();
+  const { data: subjects = [], isLoading: subjectsLoading } = useSubjects();
 
   const [darkMode, setDarkMode] = useState(() =>
     document.documentElement.classList.contains("dark")
@@ -31,11 +33,52 @@ export default function AppSettingsPage() {
   const toggleNotif = (key: keyof typeof notifications) =>
     setNotifications((prev) => ({ ...prev, [key]: !prev[key] }));
 
-  const storageUsed = 47; // MB
-  const storageTotal = 100; // MB
+  const getLocalStorageSizeBytes = (key: string) => {
+    try {
+      const v = localStorage.getItem(key);
+      if (!v) return 0;
+      return new Blob([v]).size;
+    } catch {
+      return 0;
+    }
+  };
+
+  const bytesToMB = (b: number) => Math.round((b / (1024 * 1024)) * 10) / 10;
+
+  const scoreKey = "examind-score-tracker";
+  const savedExamsKey = "examind-saved-exams";
+  const practiceHistoryKey = "examind-practice-history";
+  const notesKey = "examind-notes";
+
+  const scoreBytes = getLocalStorageSizeBytes(scoreKey);
+  const savedExamsBytes = getLocalStorageSizeBytes(savedExamsKey);
+  const historyBytes = getLocalStorageSizeBytes(practiceHistoryKey);
+  const notesBytes = getLocalStorageSizeBytes(notesKey);
+
+  const cacheBytes =
+    Object.keys(localStorage)
+      .filter((k) => k.startsWith("examind-") && ![scoreKey, savedExamsKey, practiceHistoryKey, notesKey].includes(k))
+      .reduce((sum, k) => sum + getLocalStorageSizeBytes(k), 0);
+
+  const storageUsedBytes = scoreBytes + savedExamsBytes + historyBytes + notesBytes + cacheBytes;
+  const storageTotalBytes = 5 * 1024 * 1024; // soft cap for UI only (5 MB)
 
   const handleClearCache = () => {
-    toast({ title: "Cache cleared", description: "12 MB of cached data removed." });
+    const before = cacheBytes + savedExamsBytes + historyBytes;
+    try {
+      localStorage.removeItem(savedExamsKey);
+      localStorage.removeItem(practiceHistoryKey);
+      // Clear other non-critical examind-* keys, but keep auth + required state.
+      Object.keys(localStorage)
+        .filter((k) => k.startsWith("examind-") && !["examind-mock-auth", scoreKey, notesKey].includes(k))
+        .forEach((k) => localStorage.removeItem(k));
+    } catch {
+      // best effort
+    }
+    toast({
+      title: "Cache cleared",
+      description: before > 0 ? `Cleared ~${bytesToMB(before)} MB of cached data.` : "No cache to clear yet.",
+    });
   };
 
   return (
@@ -48,6 +91,62 @@ export default function AppSettingsPage() {
       </div>
 
       <div className="px-5 py-5 space-y-6">
+        {/* Data */}
+        <section>
+          <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+            Data
+          </h2>
+          <div className="bg-card border rounded-xl divide-y">
+            {/* Subjects */}
+            <button
+              onClick={() => navigate("/subjects")}
+              className="w-full flex items-center justify-between p-4 text-left"
+            >
+              <div className="flex items-center gap-3">
+                <BookOpen className="h-4 w-4 text-primary" />
+                <div>
+                  <p className="text-sm font-medium">Subject List</p>
+                  <p className="text-[11px] text-muted-foreground">
+                    {subjectsLoading ? "Loading…" : subjects.length ? `${subjects.length} subject${subjects.length === 1 ? "" : "s"}` : "No data yet"}
+                  </p>
+                </div>
+              </div>
+              <span className="text-xs text-muted-foreground">View</span>
+            </button>
+
+            {/* Score Tracker */}
+            <button
+              onClick={() => navigate("/scores")}
+              className="w-full flex items-center justify-between p-4 text-left"
+            >
+              <div className="flex items-center gap-3">
+                <Trophy className="h-4 w-4 text-primary" />
+                <div>
+                  <p className="text-sm font-medium">Score Tracker</p>
+                  <p className="text-[11px] text-muted-foreground">
+                    {scoreBytes > 0 ? "Data available" : "No data yet"}
+                  </p>
+                </div>
+              </div>
+              <span className="text-xs text-muted-foreground">Open</span>
+            </button>
+
+            {/* Sample / Saved Exams */}
+            <div className="flex items-center justify-between p-4">
+              <div className="flex items-center gap-3">
+                <FileText className="h-4 w-4 text-primary" />
+                <div>
+                  <p className="text-sm font-medium">Sample Exams</p>
+                  <p className="text-[11px] text-muted-foreground">
+                    {savedExamsBytes > 0 ? "Saved exams available" : "No data yet"}
+                  </p>
+                </div>
+              </div>
+              <span className="text-xs text-muted-foreground">—</span>
+            </div>
+          </div>
+        </section>
+
         {/* Appearance */}
         <section>
           <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
@@ -106,18 +205,18 @@ export default function AppSettingsPage() {
                 <div className="flex justify-between items-baseline mb-1.5">
                   <p className="text-sm font-medium">Storage Used</p>
                   <p className="text-xs text-muted-foreground">
-                    {storageUsed} MB / {storageTotal} MB
+                    {bytesToMB(storageUsedBytes)} MB / {bytesToMB(storageTotalBytes)} MB
                   </p>
                 </div>
-                <Progress value={(storageUsed / storageTotal) * 100} className="h-2" />
+                <Progress value={Math.min(100, (storageUsedBytes / storageTotalBytes) * 100)} className="h-2" />
               </div>
             </div>
 
             <div className="grid grid-cols-3 gap-2 text-center">
               {[
-                { label: "Notes", size: "22 MB" },
-                { label: "Quizzes", size: "13 MB" },
-                { label: "Cache", size: "12 MB" },
+                { label: "Notes", size: notesBytes > 0 ? `${bytesToMB(notesBytes)} MB` : "No data yet" },
+                { label: "Quizzes", size: scoreBytes + historyBytes > 0 ? `${bytesToMB(scoreBytes + historyBytes)} MB` : "No data yet" },
+                { label: "Cache", size: cacheBytes + savedExamsBytes > 0 ? `${bytesToMB(cacheBytes + savedExamsBytes)} MB` : "No data yet" },
               ].map((cat) => (
                 <div key={cat.label} className="bg-surface rounded-lg py-2">
                   <p className="text-sm font-bold">{cat.size}</p>

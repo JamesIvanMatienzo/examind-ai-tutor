@@ -1,12 +1,19 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Zap, BookOpen, History, ChevronRight } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
+import PageTransition, { staggerContainer, staggerItem } from "@/components/PageTransition";
 import { useSubjects } from "@/hooks/useSubjects";
 import { Skeleton } from "@/components/ui/skeleton";
 
 type Tab = "generated" | "saved" | "history";
+
+const fadeContent = {
+  initial: { opacity: 0 },
+  animate: { opacity: 1, transition: { duration: 0.22, ease: "easeInOut" } },
+  exit: { opacity: 0, transition: { duration: 0.14, ease: "easeInOut" } },
+};
 
 export default function PracticePage() {
   const navigate = useNavigate();
@@ -20,105 +27,123 @@ export default function PracticePage() {
   ];
 
   return (
-    <div className="min-h-screen bg-surface pb-20">
-      {/* Header */}
-      <div className="bg-card px-6 pt-12 pb-4 border-b">
-        <h1 className="text-2xl font-bold font-display">Practice</h1>
-        <p className="text-sm text-muted-foreground mt-1">Generate & take practice exams</p>
-      </div>
+    <PageTransition>
+      <div className="min-h-screen bg-surface pb-20">
+        {/* Header */}
+        <div className="bg-card px-6 pt-12 pb-4 border-b">
+          <h1 className="text-2xl font-bold font-display">Practice</h1>
+          <p className="text-sm text-muted-foreground mt-1">Generate & take practice exams</p>
+        </div>
 
-      {/* Tabs */}
-      <div className="flex gap-2 px-6 pt-4">
-        {tabs.map((t) => (
-          <button
-            key={t.key}
-            onClick={() => setTab(t.key)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-              tab === t.key
-                ? "bg-primary text-primary-foreground"
-                : "bg-card border text-muted-foreground"
-            }`}
-          >
-            <t.icon className="h-3.5 w-3.5" />
-            {t.label}
-          </button>
-        ))}
-      </div>
-
-      <div className="px-6 mt-5 space-y-5">
-        {tab === "generated" && (
-          <>
-            {/* New Practice CTA */}
-            <motion.button
-              whileTap={{ scale: 0.97 }}
-              onClick={() => navigate("/practice/setup")}
-              className="w-full bg-primary text-primary-foreground rounded-xl p-4 flex items-center gap-3"
+        {/* Tabs */}
+        <div className="flex gap-2 px-6 pt-4">
+          {tabs.map((t) => (
+            <button
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
+                tab === t.key
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-card border text-muted-foreground"
+              }`}
             >
-              <div className="w-10 h-10 rounded-lg bg-primary-foreground/20 flex items-center justify-center">
-                <Zap className="h-5 w-5" />
-              </div>
-              <div className="flex-1 text-left">
-                <p className="text-sm font-semibold">New Practice Exam</p>
-                <p className="text-xs opacity-80">Choose subject, topics & question types</p>
-              </div>
-              <ChevronRight className="h-5 w-5 opacity-60" />
-            </motion.button>
+              <t.icon className="h-3.5 w-3.5" />
+              {t.label}
+            </button>
+          ))}
+        </div>
 
-            {/* By Subject */}
-            <div>
-              <h2 className="text-xs font-semibold text-muted-foreground mb-3">BY SUBJECT</h2>
-              {isLoading ? (
-                <div className="space-y-2">
-                  <Skeleton className="h-14 rounded-xl" />
-                  <Skeleton className="h-14 rounded-xl" />
-                </div>
-              ) : subjects.length === 0 ? (
-                <div className="bg-card border border-dashed rounded-xl p-4 text-center text-xs text-muted-foreground">
-                  Add a subject to start generating practice exams.
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {subjects.map((s) => (
-                    <motion.button
-                      key={s.id}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => navigate(`/practice/setup?subject=${s.id}`)}
-                      className="w-full bg-card border rounded-xl p-3 flex items-center gap-3 text-left"
-                    >
-                      <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: s.color + "20" }}>
-                        <BookOpen className="h-4 w-4" style={{ color: s.color }} />
+        <div className="px-6 mt-5 space-y-5">
+          <AnimatePresence mode="wait">
+            {tab === "generated" && (
+              <motion.div key="generated" {...fadeContent}>
+                <motion.div
+                  variants={staggerContainer}
+                  initial="initial"
+                  animate="animate"
+                  className="space-y-5"
+                >
+                  {/* New Practice CTA */}
+                  <motion.button
+                    variants={staggerItem}
+                    onClick={() => navigate("/practice/setup")}
+                    className="w-full bg-primary text-primary-foreground rounded-xl p-4 flex items-center gap-3 active:scale-[0.98] transition-transform"
+                  >
+                    <div className="w-10 h-10 rounded-lg bg-primary-foreground/20 flex items-center justify-center">
+                      <Zap className="h-5 w-5" />
+                    </div>
+                    <div className="flex-1 text-left">
+                      <p className="text-sm font-semibold">New Practice Exam</p>
+                      <p className="text-xs opacity-80">Choose subject, topics & question types</p>
+                    </div>
+                    <ChevronRight className="h-5 w-5 opacity-60" />
+                  </motion.button>
+
+                  {/* By Subject */}
+                  <motion.div variants={staggerItem}>
+                    <h2 className="text-xs font-semibold text-muted-foreground mb-3">BY SUBJECT</h2>
+                    {isLoading ? (
+                      <div className="space-y-2">
+                        <Skeleton className="h-14 rounded-xl" />
+                        <Skeleton className="h-14 rounded-xl" />
                       </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-semibold">{s.name}</p>
-                        <p className="text-xs text-muted-foreground">{s.code ?? "No code"}</p>
+                    ) : subjects.length === 0 ? (
+                      <div className="bg-card border border-dashed rounded-xl p-4 text-center text-xs text-muted-foreground">
+                        Add a subject to start generating practice exams.
                       </div>
-                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                    </motion.button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </>
-        )}
+                    ) : (
+                      <div className="space-y-2">
+                        {subjects.map((s) => (
+                          <button
+                            key={s.id}
+                            onClick={() => navigate(`/practice/setup?subject=${s.id}`)}
+                            className="w-full bg-card border rounded-xl p-3 flex items-center gap-3 text-left active:scale-[0.98] transition-transform"
+                          >
+                            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: s.color + "20" }}>
+                              <BookOpen className="h-4 w-4" style={{ color: s.color }} />
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-sm font-semibold">{s.name}</p>
+                              <p className="text-xs text-muted-foreground">{s.code ?? "No code"}</p>
+                            </div>
+                            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </motion.div>
+                </motion.div>
+              </motion.div>
+            )}
 
-        {tab === "history" && (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <History className="h-12 w-12 text-muted-foreground/20 mb-3" />
-            <p className="text-sm text-muted-foreground">No practice attempts yet</p>
-            <p className="text-xs text-muted-foreground mt-1">Take a practice exam to see your history</p>
-          </div>
-        )}
+            {tab === "history" && (
+              <motion.div
+                key="history"
+                {...fadeContent}
+                className="flex flex-col items-center justify-center py-16 text-center"
+              >
+                <History className="h-12 w-12 text-muted-foreground/20 mb-3" />
+                <p className="text-sm text-muted-foreground">No practice attempts yet</p>
+                <p className="text-xs text-muted-foreground mt-1">Take a practice exam to see your history</p>
+              </motion.div>
+            )}
 
-        {tab === "saved" && (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <BookOpen className="h-12 w-12 text-muted-foreground/20 mb-3" />
-            <p className="text-sm text-muted-foreground">No saved questions yet</p>
-            <p className="text-xs text-muted-foreground mt-1">Bookmark questions during practice to see them here</p>
-          </div>
-        )}
+            {tab === "saved" && (
+              <motion.div
+                key="saved"
+                {...fadeContent}
+                className="flex flex-col items-center justify-center py-16 text-center"
+              >
+                <BookOpen className="h-12 w-12 text-muted-foreground/20 mb-3" />
+                <p className="text-sm text-muted-foreground">No saved questions yet</p>
+                <p className="text-xs text-muted-foreground mt-1">Bookmark questions during practice to see them here</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        <BottomNav />
       </div>
-
-      <BottomNav />
-    </div>
+    </PageTransition>
   );
 }

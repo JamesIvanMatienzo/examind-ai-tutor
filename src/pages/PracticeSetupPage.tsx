@@ -2,23 +2,14 @@ import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, Clock, Target, Layers } from "lucide-react";
-
-const subjects = [
-  { id: "1", name: "Mathematics", code: "MATH 101" },
-  { id: "2", name: "Physics", code: "PHYS 201" },
-  { id: "3", name: "Filipino", code: "FIL 101" },
-  { id: "4", name: "History", code: "HIST 101" },
-];
+import LoadingOverlay from "@/components/LoadingOverlay";
+import { useSubjects } from "@/hooks/useSubjects";
 
 const questionTypes = [
   "Multiple Choice",
   "True or False",
   "Identification",
-  "Enumeration",
   "Fill in the Blank",
-  "Matching Type",
-  "Problem Solving",
-  "Essay",
 ];
 
 const itemOptions = [10, 20, 30, 50, 100];
@@ -34,12 +25,14 @@ export default function PracticeSetupPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const preselectedSubject = searchParams.get("subject") || "";
+  const { data: subjects = [], isLoading } = useSubjects();
 
   const [selectedSubject, setSelectedSubject] = useState(preselectedSubject);
   const [items, setItems] = useState(20);
   const [timeLimit, setTimeLimit] = useState(0);
   const [focus, setFocus] = useState("All Topics");
   const [selectedTypes, setSelectedTypes] = useState<string[]>(["Multiple Choice", "True or False"]);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const toggleType = (type: string) => {
     setSelectedTypes((prev) =>
@@ -47,9 +40,9 @@ export default function PracticeSetupPage() {
     );
   };
 
-  const canGenerate = selectedSubject && selectedTypes.length > 0;
+  const canGenerate = selectedSubject && selectedTypes.length > 0 && subjects.length > 0;
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     const params = new URLSearchParams({
       subject: selectedSubject,
       items: items.toString(),
@@ -57,11 +50,14 @@ export default function PracticeSetupPage() {
       focus,
       types: selectedTypes.join(","),
     });
+    setIsGenerating(true);
+    // Navigation kicks off the question load in `ActiveQuizPage`.
     navigate(`/practice/quiz?${params.toString()}`);
   };
 
   return (
     <div className="min-h-screen bg-surface pb-8">
+      <LoadingOverlay open={isGenerating} title="Generating exam…" subtitle="Sending your request to the AI engine" />
       {/* Header */}
       <div className="bg-card px-6 pt-12 pb-4 border-b flex items-center gap-3">
         <button onClick={() => navigate(-1)} className="text-foreground">
@@ -79,22 +75,30 @@ export default function PracticeSetupPage() {
           <h2 className="text-xs font-semibold text-muted-foreground mb-2 flex items-center gap-1.5">
             <Layers className="h-3.5 w-3.5" /> SUBJECT
           </h2>
-          <div className="grid grid-cols-2 gap-2">
-            {subjects.map((s) => (
-              <button
-                key={s.id}
-                onClick={() => setSelectedSubject(s.id)}
-                className={`p-3 rounded-xl text-left text-sm font-medium border transition-colors ${
-                  selectedSubject === s.id
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "bg-card text-foreground border-border"
-                }`}
-              >
-                {s.name}
-                <span className="block text-[10px] mt-0.5 opacity-70">{s.code}</span>
-              </button>
-            ))}
-          </div>
+          {isLoading ? (
+            <div className="bg-card border rounded-xl p-4 text-sm text-muted-foreground">Loading subjects…</div>
+          ) : subjects.length === 0 ? (
+            <div className="bg-card border border-dashed rounded-xl p-4 text-sm text-muted-foreground">
+              No data yet. Add a subject first before generating a practice exam.
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-2">
+              {subjects.map((s) => (
+                <button
+                  key={s.id}
+                  onClick={() => setSelectedSubject(s.id)}
+                  className={`p-3 rounded-xl text-left text-sm font-medium border transition-colors ${
+                    selectedSubject === s.id
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-card text-foreground border-border"
+                  }`}
+                >
+                  {s.name}
+                  <span className="block text-[10px] mt-0.5 opacity-70">{s.code ?? "No code"}</span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Items */}
@@ -184,10 +188,10 @@ export default function PracticeSetupPage() {
         {/* Generate */}
         <motion.button
           whileTap={{ scale: 0.97 }}
-          disabled={!canGenerate}
+          disabled={!canGenerate || isGenerating}
           onClick={handleGenerate}
           className={`w-full py-3.5 rounded-xl text-sm font-semibold transition-colors ${
-            canGenerate
+            canGenerate && !isGenerating
               ? "bg-primary text-primary-foreground"
               : "bg-muted text-muted-foreground cursor-not-allowed"
           }`}

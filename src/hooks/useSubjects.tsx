@@ -41,6 +41,7 @@ export function useCreateSubject() {
   return useMutation({
     mutationFn: async (input: { name: string; code?: string | null; color: string; exam_date?: string | null }) => {
       if (!user) throw new Error("Not authenticated");
+
       const { data, error } = await supabase
         .from("subjects")
         .insert({
@@ -52,9 +53,15 @@ export function useCreateSubject() {
         })
         .select()
         .single();
-      if (error) throw error;
+      if (error) {
+        console.error("[useCreateSubject] Supabase error:", error);
+        throw error;
+      }
       return data;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["subjects"] }),
+    onError: (error) => {
+      console.error("[useCreateSubject] Mutation error:", error);
+    },
   });
 }

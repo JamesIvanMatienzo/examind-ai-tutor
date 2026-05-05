@@ -9,6 +9,7 @@ interface QuizResult {
   type: string;
   topic: string;
   correctAnswer: string;
+  explanation: string;
   userAnswer: string;
   isCorrect: boolean;
 }
@@ -167,6 +168,7 @@ export default function QuizResultsPage() {
                           <p className="text-[10px] text-success">Correct: {r.correctAnswer}</p>
                         </div>
                       )}
+                      <p className="text-[10px] text-muted-foreground mt-1.5">{r.explanation}</p>
                     </div>
                   </div>
                 </div>

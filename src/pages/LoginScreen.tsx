@@ -18,11 +18,6 @@ export default function LoginScreen() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // #region agent log
-    const __debugPayload = {sessionId:'3fc829',runId:'pre-fix',hypothesisId:'H1',location:'src/pages/LoginScreen.tsx:handleLogin',message:'login_submit',data:{emailProvided:!!email,passwordProvided:!!password,emailDomain:(email.split('@')[1]||'')},timestamp:Date.now()};
-    fetch('http://127.0.0.1:7908/ingest/551beb29-a1a5-4555-a00f-0e435b967cb6',{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'3fc829'},body:JSON.stringify(__debugPayload)}).catch(()=>{});
-    fetch('/__debug_ingest',{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'3fc829'},body:JSON.stringify(__debugPayload)}).catch(()=>{});
-    // #endregion agent log
     if (!email || !password) {
       toast.error("Please enter your email and password");
       return;
@@ -34,7 +29,7 @@ export default function LoginScreen() {
       
       // Create mock user session with proper Supabase User interface
       const mockUser = {
-        id: "dev-1",
+        id: "00000000-0000-4000-a000-000000000001",
         email: "admin@examind.com",
         user_metadata: {
           full_name: "Examind Admin",
@@ -76,17 +71,10 @@ export default function LoginScreen() {
         expiresAt: mockSession.expires_at,
       }));
 
-      // #region agent log
-      const __debugPayload = {sessionId:'3fc829',runId:'pre-fix',hypothesisId:'H1',location:'src/pages/LoginScreen.tsx:dev_login',message:'dev_login_stored_mock_session',data:{hasMarker:!!localStorage.getItem('examind-mock-auth'),storageKey,expiresAt:mockSession.expires_at},timestamp:Date.now()};
-      fetch('http://127.0.0.1:7908/ingest/551beb29-a1a5-4555-a00f-0e435b967cb6',{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'3fc829'},body:JSON.stringify(__debugPayload)}).catch(()=>{});
-      fetch('/__debug_ingest',{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'3fc829'},body:JSON.stringify(__debugPayload)}).catch(()=>{});
-      // #endregion agent log
-
-      // Navigate immediately after storing the session
-      // The AuthProvider will detect the mock session on next render
+      // Full reload so AuthProvider re-mounts and picks up the mock session
       setLoading(false);
       toast.success("Welcome back, Developer!");
-      navigate("/home");
+      window.location.href = "/home";
       
       return;
     }
