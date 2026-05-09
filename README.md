@@ -156,13 +156,6 @@ Built with React + Vite + TypeScript on top of **Lovable Cloud** (managed Supaba
 
 ---
 
-## 🐛 Bug Fixes
-
-- **Race condition on auth init** — `useAuth` now sets up `onAuthStateChange` *before* calling `getSession()`, preventing missed `INITIAL_SESSION` events that left RLS-gated queries returning empty.
-- **`removeChild` runtime error on Home** — Mixed text + emoji nodes in the dashboard greeting (`{name} 👋`) caused React reconciliation to lose track of DOM nodes when the display name updated. Fixed by wrapping the dynamic name and emoji in stable `<span>` elements.
-- **Logged-in user shown as "Ivan"** — Home/Profile were rendering hardcoded names instead of the session user. Replaced with `useDisplayName()`, which reads the profile row first, then `user_metadata.full_name` / `name`, then the email prefix.
-
----
 
 ## 🚀 Getting Started
 
