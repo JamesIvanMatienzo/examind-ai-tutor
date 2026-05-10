@@ -172,14 +172,3 @@ The app runs on `http://localhost:8080`. Lovable Cloud is auto-configured via `.
 - `bunx tsc --noEmit` — type-check
 - `bunx vitest run` — run tests
 
----
-
-## 🗺 Roadmap
-
-- [ ] Wire AI Chat to Lovable AI Gateway (Gemini / GPT-5)
-- [ ] AI-generated study plans persisted per subject
-- [ ] File uploads per subject (Lovable Cloud Storage)
-- [ ] Practice exam generation from uploaded materials
-- [ ] Score tracker backed by real attempts
-- [ ] Push notifications for upcoming exams
-- [ ] Edit / delete subjects from the UI
